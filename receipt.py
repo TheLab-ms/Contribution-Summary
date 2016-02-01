@@ -1,3 +1,6 @@
+#Python program to read Transaction List by Customer.CSV from QuickBooks and e-mail customer a Receipt.
+
+
 import csv
 import re
 import sys
@@ -36,48 +39,48 @@ def read_csv(csv_file):
 		tmp_list.append(float(row[10]))
 
 		d[tmp_name][count] = {}
-		#d[tmp_name][count]['date'] = row[2]
-		#d[tmp_name][count]['email'] = row[5]
-		#d[tmp_name][count]['item'] = ' '.join(row[9].split()[2:])
-		#d[tmp_name][count]['amount'] = float(row[10])
 		d[tmp_name][count] = tmp_list
 		d[tmp_name]['total'] = d[tmp_name]['total'] + float(row[10])
-
 		count = count + 1
-    #print d
+		
     return d   #hehe return the d
 
-def send_email(name, emails, msg):
+def send_email(name, recipients, msg, total):
 
-    sender = 'no-reply@thelab.ms'
-    email = ['init6@init6.me']
+    recipient = 'init6@init6.me' # for testing
 
-    message = '''From: TheLab.ms <no-reply@thelab.ms>\r\n
-To: %s\r\n
-Subject: TheLab.ms - 2015 Contribution Summary\r\n
-\r\n
-%s,  The rest of the leadership team and I want to thank you for supporting TheLab.ms.\r\n
+    gmail_user = 'jason@thelab.ms'
+    gmail_pass = 'password'
+    
+    from_email = 'no-reply@thelab.ms'
+    to_email = recipient if type(recipient) is list else [recipient]
+    subject = 'TheLab.ms - 2015 Contribution Summary'
+    body = '''%s,  The rest of the leadership team and I want to thank you for supporting TheLab.ms.
 
-2015 wrap up\r\n
-words\r\n
-words\r\n
-words\r\n
-words\r\n
+2015 wrap up
+words
+words
+words
+words
 
-Contribution Summary:\r\n
+Contribution Summary:
 %s
-''' % (email, name, msg)
+Total: $%s
+''' % (name, msg, total)
+
+    
+    message = '''From: %s\nTo: %s\nSubject: %s\n\n%s''' % (from_email, ", ".join(to_email), subject, body)
+
+
 
 
     try:
-	username = 'jason@thelab.ms'
-	password = 'password'
 
 	smtpObj = smtplib.SMTP('smtp.gmail.com:587')
 	smtpObj.ehlo()
 	smtpObj.starttls()
-	smtpObj.login(username,password)
-	smtpObj.sendmail(sender, email, message)
+	smtpObj.login(gmail_user, gmail_pass)
+	smtpObj.sendmail(from_email, to_email, message)
 	print("Successfully sent email")
 	smtpObj.quit()
 
@@ -108,6 +111,4 @@ if __name__ == "__main__":
 		msg += 'Date: %s, Item: %s, Amount: %s\r\n' % (v[0],v[1],v[2])
 
 	if email:
-	    send_email(name, email, msg)
-	#print('Name: %s' % (name))
-	#print('Line item detail:\n%s\n' % (msg) )
+	    send_email(name, email, msg, total)
